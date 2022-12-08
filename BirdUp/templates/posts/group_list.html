@@ -1,0 +1,40 @@
+<!-- templates/posts/group_posts.html -->
+{% extends 'base.html' %}
+{% load thumbnail %}
+{% block title %}
+  <title>
+    {{ group.title }}
+  </title>  
+{% endblock %} 
+{% block content %}
+  <main>
+    <div class="container py-5">     
+      <h1>{{ group.title }}</h1>
+      <p>{{ group.description }}</p>
+      <p> Всего постов в группе: {{ count }}</p>
+      {% if following %}
+          <a
+            class="btn btn-lg btn-light"
+            href="{% url 'posts:group_unfollow' slug=group.slug %}" role="button"
+          >
+            Отписаться
+          </a>
+        {% else %}
+          <a
+            class="btn btn-lg btn-primary"
+            href="{% url 'posts:group_follow' slug=group.slug %}" role="button"
+          >
+            Подписаться
+          </a>
+      {% endif %}
+      <hr> 
+      <article>
+        {% for post in page_obj %}
+        {% include 'posts/includes/post_list.html' %} 
+        {% endfor %}  
+        <hr>  
+      </article>
+    </div>
+  </main>  
+  {% include 'includes/paginator.html' %}  
+{% endblock %}

@@ -1,0 +1,40 @@
+<!-- templates/posts/follow.html -->
+{% extends 'base.html' %}
+{% block title %}
+  <title>
+    Список групп
+  </title>  
+{% endblock %} 
+{% block content %}
+  <main>
+    <div class="container py-5">     
+      <h1>Список групп</h1>
+      <hr> 
+      <article>
+        {% include 'posts/includes/switcher.html' %}
+        {% for group in page_obj %}
+          <div class="row justify-content-center">
+            <div class="col-md-8 p-5">
+              <div class="card">
+                <div class="card-header">
+                    <h2> {{ group.title }} </h2>
+                  {% if group.description  %}   
+                    {{ group.description }}
+                  {% endif %}
+                  <br> 
+                  <br>
+                  <a class="nav-link" 
+                    href="{% url 'posts:group_list' group.slug %}"
+                  >
+                  <button type="submit" class="btn btn-primary">Записи группы</button>
+                </div>
+              </div>
+            </div>
+          </div>        
+        {% endfor %}
+        <hr>         
+      </article>
+    </div>
+  </main>  
+  {% include 'includes/paginator.html' %}
+{% endblock %}

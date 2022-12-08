@@ -1,0 +1,65 @@
+<!-- templates/posts/create_post.html -->
+{% extends 'base.html' %}
+{% load thumbnail %}
+{% block title %}
+  <title>
+    Новая группа
+  </title> 
+{% endblock %}   
+{% block content %}
+<main>
+  <div class="container py-5">
+    <div class="row justify-content-center">
+      <div class="col-md-8 p-5">
+        <div class="card">
+          <div class="card-header">   
+            Новая группа           
+          </div>
+          <div class="card-body">
+            <form method="post" enctype="multipart/form-data" action="{% url 'posts:group_create' %}">    
+              {% csrf_token %}         
+              <div class="form-group row my-3 p-3"> 
+                <label for="id_title">
+                  Название группы                  
+                  <span class="required text-danger" >*</span>                
+                </label> 
+                  {{ form.title }}                   
+                <small id="id_text-help" class="form-text text-muted">
+                  Название новой группы 
+                </small>                  
+              </div>            
+              <div class="form-group row my-3 p-3">
+                <label for="id_slug">
+                  Короткий адрес для доступа к группе
+                  <span class="required text-danger" >*</span>                 
+                </label>
+                <p>
+                <div>
+                  {{ form.slug }}
+                </div>
+                <small id="id_slug-help" class="form-text text-muted">
+                  На английском
+                </small>
+              </div>
+              <div class="form-group row my-3 p-3"> 
+                <label for="id_description">
+                  Описание группы                                 
+                </label> 
+                  {{ form.description }}                   
+                <small id="id_text-help" class="form-text text-muted">
+                  Описание Вашей группы 
+                </small>
+              </div>
+              <div class="d-flex justify-content-end">
+                <button type="submit" class="btn btn-primary">
+                  Создать
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>   
+{% endblock %}
