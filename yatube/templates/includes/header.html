@@ -1,0 +1,92 @@
+<!-- templates/includes/header.html -->
+{% load static %}
+{% load thumbnail %}
+<header>
+  <nav class="navbar navbar-light" style="background-color: #ef70d2">
+    <div class="container">
+      <a class="navbar-brand" href="{% url 'posts:index' %}">
+        <img src="{% static 'img/logo.png' %}" width="30" height="30" class="d-inline-block align-top" alt="">
+        <span style="color:red">Ya</span>tube
+      </a>
+      <ul class="nav nav-pills">
+        {% with request.resolver_match.view_name as view_name %}
+        <a class="nav-link {% if view_name == 'about:author' %}active{% endif %}"
+          href="{% url 'about:author' %}"
+        >
+          Об авторе
+        </a> 
+        </li>
+        <li class="nav-item">
+          <a class="nav-link {% if view_name == 'about:tech' %}active{% endif %}" 
+            href="{% url 'about:tech' %}"
+          >
+            Технологии
+          </a>
+        </li>
+        {% if request.user.is_authenticated %}
+        <li class="nav-item"> 
+          <a class="nav-link {% if view_name == 'posts:create' %}active{% endif %}" 
+            href="{% url 'posts:create' %}"
+          >
+            Новая запись
+          </a>
+        </li>
+        <li class="nav-item"> 
+          <a class="nav-link {% if view_name == 'posts:group_create' %}active{% endif %}" 
+            href="{% url 'posts:group_create' %}"
+          >
+            Создать группу
+          </a>
+        </li>
+        <li class="nav-item"> 
+          <a class="nav-link link-light {% if view_name == 'users:password_change' %}active{% endif %}"
+            href="{% url 'users:password_change' %}"
+          >
+            Изменить пароль
+          </a>
+        </li>
+        <li class="nav-item"> 
+          <a class="nav-link link-light {% if view_name == 'users:edit' %}active{% endif %}"
+            href="{% url 'users:edit' profile_id=request.user.profile.id %}"
+          >
+            Редактировать профиль
+          </a>
+        </li>
+        <li class="nav-item"> 
+          <a class="nav-link link-light" href="{% url 'users:logout' %}">Выйти</a>
+        </li>
+        <li class="nav-item"> 
+          <a class="nav-link link-light {% if view_name == 'posts:profile' %}active{% endif %}" 
+            href="{% url 'posts:profile' username=request.user %}"
+          >
+            Пользователь: {{ user }}
+          </a>
+        </li>
+        <li>
+          <div style="margin: 00px 00px 00px 20px;">
+            {% thumbnail user.profile.photo "27x27" upscale=True as im %}
+              <img class="card-img my-2" src="{{ im.url }}">
+            {% endthumbnail %}
+          </div>
+        </li>
+        {% else %}
+        <li class="nav-item"> 
+          <a class="nav-link link-light {% if view_name == 'users:login' %}active{% endif %}"
+            href="{% url 'users:login' %}"
+          >
+            Войти
+          </a>
+        </li>
+        <li class="nav-item"> 
+          <a class="nav-link link-light {% if view_name == 'users:signup' %}active{% endif %}"
+            href="{% url 'users:signup' %}"
+          >
+            Регистрация
+          </a>
+        </li>
+        {% endif %} 
+        {% endwith %}        
+      </ul>
+    </div>
+  </nav>
+</header>                    

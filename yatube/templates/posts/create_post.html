@@ -1,0 +1,105 @@
+<!-- templates/posts/create_post.html -->
+{% extends 'base.html' %}
+{% load thumbnail %}
+{% block title %}
+{% if is_edit %}
+    <title>
+      Редактировать пост
+    </title>
+{% else %}
+  <title>
+    Новый пост
+  </title>   
+{% endif %}
+{% endblock %} 
+{% block content %}
+<main>
+  <div class="container py-5">
+    <div class="row justify-content-center">
+      <div class="col-md-8 p-5">
+        <div class="card">
+          <div class="card-header">
+            {% if is_edit %}
+              Редактируемый пост   
+            {% else %}      
+              Новый пост 
+            {% endif %}              
+          </div>
+          <div class="card-body">
+            {% if is_edit %}
+              <form method="post" enctype="multipart/form-data" action="{% url 'posts:post_edit' post_id=post.id %}">
+            {% else %}
+              <form method="post" enctype="multipart/form-data" action="{% url 'posts:create' %}"> 
+            {% endif %}     
+              {% csrf_token %}         
+              <div class="form-group row my-3 p-3">
+                {% if post.image %}
+                  <div class="card">
+                    {% thumbnail post.image "1280x720" upscale=True as im %}
+                      <img class="card-img my-2" src="{{ im.url }}">
+                    {% endthumbnail %}
+                  </div>
+                {% endif %}  
+                <label for="id_text">
+                  Текст поста                  
+                  <span class="required text-danger" >*</span>                
+                </label> 
+                  {{ form.text }}                   
+                <small id="id_text-help" class="form-text text-muted">
+                  {% if is_edit %}
+                  Текст редактируемого поста 
+                  {% else %} 
+                    Текст нового поста
+                  {% endif %}   
+                </small>                  
+              </div>            
+              <div class="form-group row my-3 p-3">
+                <label for="id_group">
+                  Группа                  
+                </label>
+                <p>
+                <div>
+                  {{ form.group }}
+                </div>
+                <small id="id_group-help" class="form-text text-muted">
+                  Группа, к которой будет относиться пост
+                </small>
+              </div>
+              <div class="form-group row my-3 p-3"> 
+                {% if post.image %}
+                  <div class="card">
+                    <label for="id_image">
+                      Картинка поста:                 
+                    </label> <a href="/media/{{ post.image.name }}"> {{ post.image.name }}</a>
+                    <label for="image-clear_id">Очистить:</label>
+                    <p>
+                    <input type="checkbox" name="image-clear" id="image-clear_id">
+                    <input type="file" name="image" accept="image/*" class="form-control" id="id_image">
+                    <p> 
+                  </div>
+                {% else %}
+                  <label for="id_image">
+                    Картинка                   
+                  </label>
+                  <p>
+                  <p>
+                  <input type="file" name="image" accept="image/*" class="form-control" id="id_image">  
+                {% endif %}
+              </div>
+              <div class="d-flex justify-content-end">
+                <button type="submit" class="btn btn-primary">
+                  {% if is_edit %}
+                    Сохранить
+                  {% else %}
+                    Добавить
+                  {% endif %} 
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>   
+{% endblock %}
