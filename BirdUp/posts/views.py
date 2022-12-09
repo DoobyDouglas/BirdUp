@@ -1,4 +1,5 @@
-from django.shortcuts import get_object_or_404, redirect
+from django.shortcuts import get_object_or_404, redirect, render
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from .models import Post, Group, Follow
 from posts.forms import PostForm, CommentForm, GroupForm
@@ -91,6 +92,10 @@ class GroupPosts(ListView):
         post_list = group.group_posts.all()
         count = post_list.count()
         if self.request.user.is_authenticated:
+            group_post = Follow.objects.filter(user=user, group=group).exists()
+        else:
+            group_post = False
+        if self.request.user.is_authenticated:
             following = Follow.objects.filter(
                 user=user, group=group
             ).exists()
@@ -100,6 +105,7 @@ class GroupPosts(ListView):
             'group': group,
             'count': count,
             'following': following,
+            'group_post': group_post,
         }
         return super().get_context_data(**context)
 
@@ -153,7 +159,11 @@ class PostEdit(UpdateView, LoginRequiredMixin):
         return super().get_context_data(**context)
 
     def form_valid(self, form):
-        form.save()
+        post = form.save(commit=False)
+        post.author = self.request.user
+        post.save()
+        if post.group in Group.objects.all():
+            return redirect('posts:group_list', slug=post.group.slug)
         return super().form_valid(form)
 
     def dispatch(self, request, *args, **kwargs):
@@ -308,3 +318,59 @@ class GroupUnfollow(View, LoginRequiredMixin):
         if not request.user.is_authenticated:
             return self.handle_no_permission()
         return super().dispatch(request, *args, **kwargs)
+
+
+# Создание поста в группе
+class GroupPostCreate(CreateView, LoginRequiredMixin):
+    template_name = 'posts/group_post.html'
+    form_class = PostForm
+    slug_url_kwarg = 'slug'
+
+    def get_context_data(self, **kwargs):
+        group = get_object_or_404(Group, slug=self.kwargs['slug'])
+        post = Post.objects.create(group=group, author=self.request.user)
+        form = PostForm(instance=post)
+        context = {
+            'form': form,
+            'post': post,
+        }
+        return super().get_context_data(**context)
+
+    def form_valid(self, form):
+        form.save()
+        return super().form_valid(form)
+
+    def dispatch(self, request, *args, **kwargs):
+        user = request.user
+        group = get_object_or_404(Group, slug=self.kwargs['slug'])
+        follow = Follow.objects.filter(user=user, group=group)
+        if not request.user.is_authenticated:
+            return self.handle_no_permission()
+        if not follow.exists():
+            return redirect('posts:group_list',
+                            slug=self.kwargs['slug'])
+        return super().dispatch(request, *args, **kwargs)
+
+
+@login_required
+def group_post_create(request, slug):
+    template = 'posts/create_post.html'
+    group = get_object_or_404(Group, slug=slug)
+    post = Post.objects.create(group=group, author=request.user)
+    if post.author == request.user:
+        form = PostForm(instance=post)
+        if request.method == 'GET':
+            context = {
+                'form': form,
+                'is_edit': True,
+                'post': post,
+            }
+            return render(request, template, context)
+        if request.method == 'POST':
+            form = PostForm(
+                request.POST or None,
+                files=request.FILES or None,
+                instance=post
+            )
+            if form.is_valid():
+                form.save()

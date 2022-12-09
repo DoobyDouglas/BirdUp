@@ -27,6 +27,14 @@
             Подписаться
           </a>
       {% endif %}
+      {% if group_post %}
+      <a
+        class="btn btn-lg btn-primary"
+        href="{% url 'posts:group_post' slug=group.slug %}" role="button"
+      >
+        Написать пост
+      </a>
+      {% endif %}
       <hr> 
       <article>
         {% for post in page_obj %}

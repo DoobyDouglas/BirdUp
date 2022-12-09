@@ -105,8 +105,8 @@ class PostFormTests(TestCase):
                     }), data=form_data, follow=True
         )
         self.assertRedirects(
-            response, reverse('posts:post_detail',
-                              kwargs={'post_id': f'{self.post.id}'}))
+            response, reverse('posts:group_list',
+                              kwargs={'slug': f'{self.group.slug}'}))
         self.assertTrue(Post.objects.filter(text='Тестовый текст 2').exists())
         response = self.guest_client.post(
             reverse('posts:post_edit',
