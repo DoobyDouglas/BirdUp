@@ -16,7 +16,7 @@
               Новый пост             
           </div>
           <div class="card-body">
-              <form method="post" enctype="multipart/form-data" action="{% url 'posts:post_edit' post_id=post.id %}">  
+              <form method="post" enctype="multipart/form-data" action="{% url 'posts:group_post' slug=group.slug %}">  
               {% csrf_token %}         
               <div class="form-group row my-3 p-3">
                 {% if post.image %}
@@ -37,17 +37,12 @@
               </div>            
               <div class="form-group row my-3 p-3">
                 <label for="id_group">
-                  Группа {{ post.group.title }}               
+                  Группа {{ group.title }}               
                 </label>
-                <p class="not-visible">
-                  <div>
-                    <h2 class="
-                      visually-hidden">
-                        {{ form.group }}
-                    </h2>    
-                  </div>
+                <p>
+                <p>
                 <small id="id_group-help" class="form-text text-muted">
-                  Пост появится в группе {{ post.group.title }} 
+                  Пост появится в группе {{ group.title }} 
                 </small>
               </div>
               <div class="form-group row my-3 p-3"> 

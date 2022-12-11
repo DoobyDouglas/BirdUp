@@ -5,9 +5,15 @@
     <div class="card">
       <div class="card-header">
         <ul>
-          <li>
-            Автор: {{ post.author.get_full_name }}
+        {% if post.group.creator == post.author %}
+          <li class="list-group-item">
+            Автор: {{ post.group.title }}<br>
           </li>
+        {% else %}
+          <li class="list-group-item">
+            Автор: {{ post.author.get_full_name }}<br>
+          </li>
+        {% endif %}
           <li>
             Дата публикации: {{ post.pub_date|date:"d E Y" }}
           </li>
@@ -16,9 +22,13 @@
           <img class="card-img my-2" src="{{ im.url }}">
         {% endthumbnail %}
         <p>{{ post.text }}</p>
-        <a href="{% url 'posts:profile' post.author.username %}">все посты пользователя</a><br>    
-        {% if post.group %}   
-          <a href="{% url 'posts:group_list' post.group.slug %}">все записи группы</a><br> 
+        {% if not profile %}
+          <a href="{% url 'posts:profile' post.author.username %}">все посты пользователя</a><br>
+        {% endif %}    
+        {% if post.group %}
+          {% if not group_list %}
+            <a href="{% url 'posts:group_list' post.group.slug %}">все записи группы</a><br> 
+          {% endif %}
         {% endif %}
         <br> 
         <a class="nav-link" 

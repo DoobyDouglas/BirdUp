@@ -13,6 +13,12 @@ class Group(models.Model):
         blank=True,
         null=True,
     )
+    creator = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='creator',
+        verbose_name='Создатель'
+    )
 
     def get_absolute_url(self):
         return reverse('posts:group_list', kwargs={'slug': self.slug})

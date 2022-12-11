@@ -34,7 +34,10 @@ class Profile(ListView):
     paginate_by = POSTS_ON_PAGE
 
     def get_queryset(self):
-        return Post.objects.filter(author__username=self.kwargs['username'])
+        return Post.objects.filter(
+            author__username=self.kwargs['username']).filter(
+                group__isnull=True
+        )
 
     def get_context_data(self, **kwargs):
         user = self.request.user
@@ -53,6 +56,7 @@ class Profile(ListView):
             'author': author,
             'following': following,
             'follow_button': follow_button,
+            'profile': True,
         }
         return super().get_context_data(**context)
 
@@ -106,6 +110,7 @@ class GroupPosts(ListView):
             'count': count,
             'following': following,
             'group_post': group_post,
+            'group_list': True,
         }
         return super().get_context_data(**context)
 
@@ -116,8 +121,12 @@ class PostCreate(CreateView, LoginRequiredMixin):
     form_class = PostForm
 
     def get_context_data(self, **kwargs):
+        groups = Group.objects.filter(
+            group_following__user=self.request.user
+        )
         context = {
             'is_edit': False,
+            'groups': groups,
         }
         return super().get_context_data(**context)
 
@@ -159,11 +168,11 @@ class PostEdit(UpdateView, LoginRequiredMixin):
         return super().get_context_data(**context)
 
     def form_valid(self, form):
+        post_group = get_object_or_404(Post, id=self.kwargs['post_id'])
         post = form.save(commit=False)
         post.author = self.request.user
+        post.group = post_group.group
         post.save()
-        if post.group in Group.objects.all():
-            return redirect('posts:group_list', slug=post.group.slug)
         return super().form_valid(form)
 
     def dispatch(self, request, *args, **kwargs):
@@ -264,7 +273,9 @@ class GroupCreate(CreateView, LoginRequiredMixin):
 
     def form_valid(self, form):
         group = form.save(commit=False)
+        group.creator = self.request.user
         group.save()
+        Follow.objects.create(user=self.request.user, group=group)
         return super().form_valid(form)
 
     def dispatch(self, request, *args, **kwargs):
@@ -328,16 +339,19 @@ class GroupPostCreate(CreateView, LoginRequiredMixin):
 
     def get_context_data(self, **kwargs):
         group = get_object_or_404(Group, slug=self.kwargs['slug'])
-        post = Post.objects.create(group=group, author=self.request.user)
-        form = PostForm(instance=post)
         context = {
-            'form': form,
-            'post': post,
+            'group': group,
         }
         return super().get_context_data(**context)
 
     def form_valid(self, form):
-        form.save()
+        group = get_object_or_404(Group, slug=self.kwargs['slug'])
+        post = form.save(commit=False)
+        post.author = self.request.user
+        post.group = group
+        post.save()
+        if post.group in Group.objects.all():
+            return redirect('posts:group_list', slug=post.group.slug)
         return super().form_valid(form)
 
     def dispatch(self, request, *args, **kwargs):

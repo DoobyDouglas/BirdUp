@@ -27,9 +27,15 @@
                       </a>
                       </li>
                     {% endif %}
-                    <li class="list-group-item">
-                      Автор: {{ post.author.get_full_name }}<br>
-                    </li>
+                    {% if post.group.creator == post.author %}
+                      <li class="list-group-item">
+                        Автор: {{ post.group.title }}<br>
+                      </li>
+                    {% else %}
+                      <li class="list-group-item">
+                        Автор: {{ post.author.get_full_name }}<br>
+                      </li>
+                    {% endif %}
                     <li class="list-group-item d-flex justify-content-between align-items-center">
                       Всего постов автора:  <span >{{ count }}</span>
                     </li>

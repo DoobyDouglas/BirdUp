@@ -52,13 +52,27 @@
                     Текст нового поста
                   {% endif %}   
                 </small>                  
-              </div>            
-              <div class="form-group row my-3 p-3">
-                <label for="id_group">
-                  Пост появится на вашей стринице                 
-                </label>
-                <p>
               </div>
+              {% if groups %}            
+                <div class="form-group row my-3 p-3">
+                  <label for="id_group">
+                    Группа                  
+                  </label>
+                  <p>
+                  <div>
+                    <select name="group" class="form-control" id="id_group"> 
+                      <option value="" selected>---------</option> 
+                      {% for group in groups %} 
+                        <option value="{{ group.id }}">{{ group.title }}</option>  
+                      {% endfor %}   
+                    </select> 
+                  </div>
+                  <small id="id_group-help" class="form-text text-muted">
+                    Группа, к которой будет относиться пост
+                  </small>
+                  <p>
+                </div>
+              {% endif %}
               <div class="form-group row my-3 p-3"> 
                 {% if post.image %}
                   <div class="card">

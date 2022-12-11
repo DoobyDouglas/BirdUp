@@ -18,6 +18,7 @@ class PostURLTests(TestCase):
             title='Тестовая группа',
             slug='test-slug',
             description='Тестовое описание',
+            creator=cls.user,
         )
         cls.post = Post.objects.create(
             author=cls.user,
