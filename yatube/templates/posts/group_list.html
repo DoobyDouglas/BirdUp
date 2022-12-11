@@ -1,0 +1,25 @@
+<!-- templates/posts/group_posts.html -->
+{% extends 'base.html' %}
+{% load thumbnail %}
+{% block title %}
+  <title>
+    {{ group.title }}
+  </title>  
+{% endblock %} 
+{% block content %}
+  <main>
+    <div class="container py-5">     
+      <h1>{{ group.title }}</h1>
+      <p>{{ group.description }}</p>
+      <p> Всего постов в группе: {{ count }}</p>
+      <hr> 
+      <article>
+        {% for post in page_obj %}
+        {% include 'posts/includes/post_list.html' %} 
+        {% endfor %}  
+        <hr>  
+      </article>
+    </div>
+  </main>  
+  {% include 'includes/paginator.html' %}  
+{% endblock %}
