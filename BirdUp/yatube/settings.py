@@ -26,8 +26,8 @@ SECRET_KEY = '09^j!%bk!%i$)um&$x%)#w@rc7oxfu1g30d(w=d4yfr!y5k3)0'
 DEBUG = True
 
 ALLOWED_HOSTS = [
-    'www.doobydouglas.pythonanywhere.com',
-    'doobydouglas.pythonanywhere.com',
+    'www.birdup.pythonanywhere.com',
+    'birdup.pythonanywhere.com',
     'localhost',
     '127.0.0.1',
     '[::1]',
