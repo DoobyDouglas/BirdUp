@@ -1,8 +1,7 @@
 from django.shortcuts import get_object_or_404, redirect, render
-from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from .models import Post, Group, Follow
-from posts.forms import PostForm, CommentForm, GroupForm
+from posts.forms import PostForm, CommentForm, GroupForm, SearchForm
 from django.contrib.auth import get_user_model
 from django.views.generic import ListView, DetailView, CreateView, UpdateView
 from django.views.generic import View
@@ -42,6 +41,10 @@ class Profile(ListView):
     def get_context_data(self, **kwargs):
         user = self.request.user
         author = get_object_or_404(User, username=self.kwargs['username'])
+        no_group = Post.objects.filter(
+            author__username=self.kwargs['username']).filter(
+                group__isnull=True
+        )
         if self.request.user.is_authenticated:
             following = Follow.objects.filter(
                 user=user, author=author
@@ -57,6 +60,7 @@ class Profile(ListView):
             'following': following,
             'follow_button': follow_button,
             'profile': True,
+            'no_group': no_group,
         }
         return super().get_context_data(**context)
 
@@ -85,6 +89,7 @@ class PostDetail(DetailView):
 # Группа
 class GroupPosts(ListView):
     template_name = 'posts/group_list.html'
+    slug_url_kwarg = 'slug'
     paginate_by = POSTS_ON_PAGE
 
     def get_queryset(self):
@@ -95,7 +100,9 @@ class GroupPosts(ListView):
         user = self.request.user
         post_list = group.group_posts.all()
         count = post_list.count()
-        if self.request.user.is_authenticated:
+        if group.creator == self.request.user:
+            group_post = True
+        elif self.request.user.is_authenticated:
             group_post = Follow.objects.filter(user=user, group=group).exists()
         else:
             group_post = False
@@ -170,7 +177,6 @@ class PostEdit(UpdateView, LoginRequiredMixin):
     def form_valid(self, form):
         post_group = get_object_or_404(Post, id=self.kwargs['post_id'])
         post = form.save(commit=False)
-        post.author = self.request.user
         post.group = post_group.group
         post.save()
         return super().form_valid(form)
@@ -357,34 +363,98 @@ class GroupPostCreate(CreateView, LoginRequiredMixin):
     def dispatch(self, request, *args, **kwargs):
         user = request.user
         group = get_object_or_404(Group, slug=self.kwargs['slug'])
-        follow = Follow.objects.filter(user=user, group=group)
         if not request.user.is_authenticated:
             return self.handle_no_permission()
-        if not follow.exists():
+        follow = Follow.objects.filter(user=user, group=group)
+        if not follow.exists() and group.creator != self.request.user:
             return redirect('posts:group_list',
                             slug=self.kwargs['slug'])
         return super().dispatch(request, *args, **kwargs)
 
 
-@login_required
-def group_post_create(request, slug):
-    template = 'posts/create_post.html'
-    group = get_object_or_404(Group, slug=slug)
-    post = Post.objects.create(group=group, author=request.user)
-    if post.author == request.user:
-        form = PostForm(instance=post)
-        if request.method == 'GET':
-            context = {
-                'form': form,
-                'is_edit': True,
-                'post': post,
-            }
-            return render(request, template, context)
-        if request.method == 'POST':
-            form = PostForm(
-                request.POST or None,
-                files=request.FILES or None,
-                instance=post
-            )
-            if form.is_valid():
-                form.save()
+# Поиск по постам
+class PostSearchView(ListView):
+    model = Post
+    template_name = 'posts/post_search.html'
+    paginate_by = POSTS_ON_PAGE
+
+    def get(self, request, *args, **kwargs):
+        query = self.request.GET.get('query')
+        form = SearchForm()
+        if query == '':
+            return redirect('posts:index')
+        elif query:
+            self.object_list = self.get_queryset()
+        return render(
+            request,
+            self.template_name,
+            {'form': form, 'page_obj': self.object_list, 'query': query}
+        )
+
+    def get_queryset(self):
+        query = self.request.GET.get('query')
+        return Post.objects.filter(text__icontains=query)
+
+
+# Поиск по пользователям
+class UserSearchView(ListView):
+    model = User
+    template_name = 'posts/user_search.html'
+    paginate_by = POSTS_ON_PAGE
+
+    def get(self, request, *args, **kwargs):
+        query = self.request.GET.get('query')
+        form = SearchForm()
+        if query == '':
+            return redirect('posts:index')
+        elif query:
+            self.object_list = self.get_queryset()
+        return render(
+            request,
+            self.template_name,
+            {'form': form, 'page_obj': self.object_list, 'query': query}
+        )
+
+    def get_queryset(self):
+        query = self.request.GET.get('query')
+        first_name = User.objects.filter(first_name__icontains=query)
+        last_name = User.objects.filter(last_name__icontains=query)
+        username = User.objects.filter(username__icontains=query)
+        return list(first_name | last_name | username)
+
+
+# Поиск по группам
+class GroupSearchView(ListView):
+    model = Group
+    template_name = 'posts/group_search.html'
+    paginate_by = POSTS_ON_PAGE
+
+    def get(self, request, *args, **kwargs):
+        query = self.request.GET.get('query')
+        form = SearchForm()
+        if query == '':
+            return redirect('posts:index')
+        elif query:
+            self.object_list = self.get_queryset()
+        return render(
+            request,
+            self.template_name,
+            {'form': form, 'page_obj': self.object_list, 'query': query}
+        )
+
+    def get_queryset(self):
+        query = self.request.GET.get('query')
+        title = Group.objects.filter(title__icontains=query)
+        description = Group.objects.filter(description__icontains=query)
+        return list(title | description)
+
+
+# Подписчики группы
+class GroupFollowers(ListView):
+    template_name = 'posts/group_followers.html'
+    slug_url_kwarg = 'slug'
+    paginate_by = POSTS_ON_PAGE
+
+    def get_queryset(self):
+        group = get_object_or_404(Group, slug=self.kwargs['slug'])
+        return User.objects.filter(follower__group=group)

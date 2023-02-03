@@ -10,20 +10,22 @@
       </a>
       <ul class="nav nav-pills">
         {% with request.resolver_match.view_name as view_name %}
-        <a class="nav-link {% if view_name == 'about:author' %}active{% endif %}"
-          href="{% url 'about:author' %}"
-        >
-          Об авторе
-        </a> 
-        </li>
-        <li class="nav-item">
-          <a class="nav-link {% if view_name == 'about:tech' %}active{% endif %}" 
-            href="{% url 'about:tech' %}"
-          >
-            Технологии
-          </a>
-        </li>
         {% if request.user.is_authenticated %}
+        {% if index %}
+          <form class="form-inline" method="GET" action="{% url 'posts:post_search' %}">
+            <input class="form-control mr-sm-2" type="search" placeholder="Поиск постов" aria-label="Поиск" name="query">
+          </form>
+        {% endif %}
+        {% if follow %}
+          <form class="form-inline" method="GET" action="{% url 'posts:user_search' %}">
+            <input class="form-control mr-sm-2" type="search" placeholder="Поиск пользователей" aria-label="Поиск" name="query">
+          </form>
+        {% endif %}
+        {% if groups %}
+          <form class="form-inline" method="GET" action="{% url 'posts:group_search' %}">
+            <input class="form-control mr-sm-2" type="search" placeholder="Поиск групп" aria-label="Поиск" name="query">
+          </form>
+        {% endif %}
         <li class="nav-item"> 
           <a class="nav-link {% if view_name == 'posts:create' %}active{% endif %}" 
             href="{% url 'posts:create' %}"
@@ -55,9 +57,9 @@
         <li class="nav-item"> 
           <a class="nav-link link-light" href="{% url 'users:logout' %}">Выйти</a>
         </li>
-        <li class="nav-item"> 
-          <a class="nav-link link-light {% if view_name == 'posts:profile' %}active{% endif %}" 
-            href="{% url 'posts:profile' username=request.user %}"
+        <li class="nav-item">
+          <a class="nav-link link-light"
+          href="{% url 'posts:profile' username=request.user %}"
           >
             Пользователь: {{ user }}
           </a>

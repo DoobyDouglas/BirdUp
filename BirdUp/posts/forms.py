@@ -1,4 +1,5 @@
 from .models import Post, Comment, Group
+from django import forms
 from django.forms import ModelForm
 
 
@@ -21,3 +22,7 @@ class GroupForm(ModelForm):
     class Meta:
         model = Group
         fields = ('title', 'slug', 'description')
+
+
+class SearchForm(forms.Form):
+    query = forms.CharField(max_length=200)

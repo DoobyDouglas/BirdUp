@@ -1,0 +1,42 @@
+<!-- templates/posts/post_search.html -->
+{% extends 'base.html' %}
+{% load thumbnail %}
+{% block title %}
+  <title>
+    Результаты поиска
+  </title>  
+{% endblock %} 
+{% block content %}
+  <main>
+    <div class="container py-5">     
+      <h1>Результаты поиска</h1>
+      <hr> 
+      <article>
+        {% if not page_obj %}
+          Никого не найдено по запросу {{ query }}
+        {% endif %}
+        {% for user in page_obj %}
+        <div class="row justify-content-center">
+          <div class="col-md-3 p-2">
+            <div class="card">
+              <div class="card-header">
+                <div class="row">
+                  <div class="col-4">
+                    {% thumbnail user.profile.photo "720x720" upscale=True as im %}
+                      <img class="card-img my-2" src="{{ im.url }}">
+                    {% endthumbnail %}
+                  </div> 
+                  <div class="col-8">
+                    <a href="{% url 'posts:profile' user.username %}">{{ user.get_full_name }}</a>
+                  </div>                   
+                </div>         
+              </div>
+            </div>
+          </div>
+        </div>        
+        {% endfor %} 
+      </article>
+    </div>
+  </main>
+  {% include 'includes/paginator.html' %}
+{% endblock %}

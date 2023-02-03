@@ -3,8 +3,6 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy
 from .forms import CreationForm, UserEditForm, ProfileEditForm
 from users.models import Profile
-from django.contrib.auth.decorators import login_required
-from django.shortcuts import render, redirect
 
 
 class SignUp(CreateView):
@@ -51,29 +49,3 @@ class ProfileEdit(UpdateView, LoginRequiredMixin):
         if not request.user.is_authenticated:
             return self.handle_no_permission()
         return super().dispatch(request, *args, **kwargs)
-
-
-@login_required
-def profile_edit(request):
-    template = 'users/profile_edit.html'
-    if request.method == 'POST':
-        user_form = UserEditForm(request.POST or None, instance=request.user)
-        profile_form = ProfileEditForm(
-            request.POST or None,
-            files=request.FILES or None,
-            instance=request.user.profile,
-        )
-        if user_form.is_valid() and profile_form.is_valid():
-            user_form.save()
-            profile_form.save()
-    else:
-        user_form = UserEditForm(instance=request.user)
-        profile_form = ProfileEditForm(instance=request.user.profile)
-        profile = Profile.objects.get(user=request.user)
-        return render(request,
-                      template,
-                      {'user_form': user_form,
-                       'profile_form': profile_form,
-                       'profile': profile,
-                       })
-    return redirect('posts:profile', username=request.user)

@@ -23,8 +23,10 @@
         {% endthumbnail %}
         <p>{{ post.text }}</p>
         {% if not profile %}
-          <a href="{% url 'posts:profile' post.author.username %}">все посты пользователя</a><br>
-        {% endif %}    
+          {% if post.author != post.group.creator %}
+            <a href="{% url 'posts:profile' post.author.username %}">все посты пользователя</a><br>
+          {% endif %}    
+        {% endif %}  
         {% if post.group %}
           {% if not group_list %}
             <a href="{% url 'posts:group_list' post.group.slug %}">все записи группы</a><br> 

@@ -34,4 +34,12 @@ urlpatterns = [
          views.GroupUnfollow.as_view(), name='group_unfollow'),
     path('group/<slug:slug>/create/',
          views.GroupPostCreate.as_view(), name='group_post'),
+    path('group/<slug:slug>/followers/',
+         views.GroupFollowers.as_view(), name='group_followers'),
+    path('post_search/',
+         views.PostSearchView.as_view(), name='post_search'),
+    path('user_search/',
+         views.UserSearchView.as_view(), name='user_search'),
+    path('group_search/',
+         views.GroupSearchView.as_view(), name='group_search'),
 ]

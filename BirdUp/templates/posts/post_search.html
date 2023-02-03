@@ -1,0 +1,25 @@
+<!-- templates/posts/post_search.html -->
+{% extends 'base.html' %}
+{% block title %}
+  <title>
+    Результаты поиска
+  </title>  
+{% endblock %} 
+{% block content %}
+  <main>
+    <div class="container py-5">     
+      <h1>Результаты поиска</h1>
+      <hr> 
+      <article>
+        {% if not page_obj %}
+          Ничего не найдено по запросу {{ query }}
+        {% endif %}
+        {% for post in page_obj %}
+        {% include 'posts/includes/post_list.html' %}
+        {% endfor %}
+        <hr>         
+      </article>
+    </div>
+  </main>
+  {% include 'includes/paginator.html' %}
+{% endblock %}
